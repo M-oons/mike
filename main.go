@@ -3,11 +3,14 @@ package main
 import (
 	"fmt"
 
+	"github.com/getlantern/systray"
 	"github.com/go-ole/go-ole"
 	"github.com/moutend/go-wca/pkg/wca"
 )
 
 func main() {
+	createTray()
+
 	if err := ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
 		return
 	}
@@ -32,6 +35,35 @@ func main() {
 	// if err := mmd.Activate(wca.IID_IAudioEndpointVolume, wca.CLSCTX_ALL, nil, &aev); err != nil {
 	// 	return
 	// }
+}
+
+func createTray() {
+	systray.Run(onTrayReady, onTrayExit)
+}
+
+func onTrayReady() {
+	systray.SetTitle("Mike")
+	systray.SetTooltip("Mike")
+
+	titleItem := systray.AddMenuItem("Mike", "Mike")
+	titleItem.Disable()
+
+	systray.AddSeparator()
+
+	quitItem := systray.AddMenuItem("Quit", "Quit")
+
+	go func() {
+		for {
+			select {
+			case <-quitItem.ClickedCh:
+				systray.Quit()
+			}
+		}
+	}()
+}
+
+func onTrayExit() {
+
 }
 
 func getMicrophones() []*wca.IMMDevice {
