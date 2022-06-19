@@ -1,14 +1,52 @@
 package main
 
-import (
-	"github.com/go-ole/go-ole"
-)
-
 func main() {
-	if err := ole.CoInitializeEx(0, ole.COINIT_MULTITHREADED); err != nil {
+	InitializeCOM()
+	go SetupSpeaker()
+	go CreateTray()
+	RegisterHotkeys()
+}
+
+func Mute() {
+	mic := GetCurrentMicrophone()
+	if mic == nil {
 		return
 	}
 
-	RegisterHotkeys()
-	CreateTray()
+	if !mic.Mute() {
+		return
+	}
+
+	PlaySound("mute")
+	SetMuteIcon()
+}
+
+func Unmute() {
+	mic := GetCurrentMicrophone()
+	if mic == nil {
+		return
+	}
+
+	if !mic.Unmute() {
+		return
+	}
+
+	PlaySound("unmute")
+	SetUnmuteIcon()
+}
+
+func ToggleMute() {
+	mic := GetCurrentMicrophone()
+	if mic == nil {
+		return
+	}
+
+	muted := mic.ToggleMute()
+	if muted {
+		PlaySound("mute")
+		SetMuteIcon()
+	} else {
+		PlaySound("unmute")
+		SetUnmuteIcon()
+	}
 }

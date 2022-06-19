@@ -3,11 +3,13 @@ package main
 import (
 	"sort"
 
+	"github.com/go-ole/go-ole"
 	"github.com/moutend/go-wca/pkg/wca"
 )
 
 type Device struct {
 	MMDevice *wca.IMMDevice
+	Volume   *wca.IAudioEndpointVolume
 }
 
 func (device *Device) Id() string {
@@ -39,45 +41,65 @@ func (device *Device) Name() string {
 }
 
 func (device *Device) IsMuted() bool {
-	if device.MMDevice == nil {
-		return false
-	}
-
-	var aev *wca.IAudioEndpointVolume
-	if err := device.MMDevice.Activate(wca.IID_IAudioEndpointVolume, wca.CLSCTX_ALL, nil, &aev); err != nil {
+	if device.MMDevice == nil || device.Volume == nil {
 		return false
 	}
 
 	var mute bool
-	aev.GetMute(&mute)
+	device.Volume.GetMute(&mute)
 
 	return mute
 }
 
-func (device *Device) ToggleMute() bool {
-	if device.MMDevice == nil {
+func (device *Device) Mute() bool {
+	if device.MMDevice == nil || device.Volume == nil {
 		return false
 	}
 
-	var aev *wca.IAudioEndpointVolume
-	if err := device.MMDevice.Activate(wca.IID_IAudioEndpointVolume, wca.CLSCTX_ALL, nil, &aev); err != nil {
+	if device.IsMuted() {
+		return false
+	}
+
+	device.Volume.SetMute(true, nil)
+
+	return true
+}
+
+func (device *Device) Unmute() bool {
+	if device.MMDevice == nil || device.Volume == nil {
+		return false
+	}
+
+	if !device.IsMuted() {
+		return false
+	}
+
+	device.Volume.SetMute(false, nil)
+
+	return true
+}
+
+func (device *Device) ToggleMute() bool {
+	if device.MMDevice == nil || device.Volume == nil {
 		return false
 	}
 
 	currentState := device.IsMuted()
 	newState := !currentState
-	aev.SetMute(newState, nil)
+	device.Volume.SetMute(newState, nil)
 
 	return newState
+}
+
+func InitializeCOM() {
+	ole.CoInitializeEx(0, ole.COINIT_MULTITHREADED)
 }
 
 func GetMicrophones() []*Device {
 	var devices []*Device
 
 	var mmde *wca.IMMDeviceEnumerator
-	if err := wca.CoCreateInstance(wca.CLSID_MMDeviceEnumerator, 0, wca.CLSCTX_ALL, wca.IID_IMMDeviceEnumerator, &mmde); err != nil {
-		return nil
-	}
+	wca.CoCreateInstance(wca.CLSID_MMDeviceEnumerator, 0, wca.CLSCTX_ALL, wca.IID_IMMDeviceEnumerator, &mmde)
 
 	var mmdc *wca.IMMDeviceCollection
 	mmde.EnumAudioEndpoints(wca.ECapture, wca.DEVICE_STATE_ACTIVE, &mmdc)
@@ -87,9 +109,16 @@ func GetMicrophones() []*Device {
 
 	var i uint32
 	for i = 0; i < count; i++ {
-		var item *wca.IMMDevice
-		mmdc.Item(i, &item)
-		device := Device{MMDevice: item}
+		var mmd *wca.IMMDevice
+		mmdc.Item(i, &mmd)
+
+		var aev *wca.IAudioEndpointVolume
+		mmd.Activate(wca.IID_IAudioEndpointVolume, wca.CLSCTX_ALL, nil, &aev)
+
+		device := Device{
+			MMDevice: mmd,
+			Volume:   aev,
+		}
 		devices = append(devices, &device)
 	}
 
@@ -108,11 +137,15 @@ func GetCurrentMicrophone() *Device {
 	}
 
 	var mmd *wca.IMMDevice
-	if err := mmde.GetDefaultAudioEndpoint(wca.ECapture, wca.DEVICE_STATE_ACTIVE, &mmd); err != nil {
-		return nil
-	}
+	mmde.GetDefaultAudioEndpoint(wca.ECapture, wca.DEVICE_STATE_ACTIVE, &mmd)
 
-	device := Device{MMDevice: mmd}
+	var aev *wca.IAudioEndpointVolume
+	mmd.Activate(wca.IID_IAudioEndpointVolume, wca.CLSCTX_ALL, nil, &aev)
+
+	device := Device{
+		MMDevice: mmd,
+		Volume:   aev,
+	}
 
 	return &device
 }

@@ -4,14 +4,22 @@ import (
 	"github.com/getlantern/systray"
 )
 
+var muteIcon []byte = GetIconData("icons/mute.ico")
+var unmuteIcon []byte = GetIconData("icons/unmute.ico")
+
 func CreateTray() {
 	systray.Run(onReady, onExit)
 }
 
-func onReady() {
-	muteIcon := GetIconData("icons/mute.ico")
-	unmuteIcon := GetIconData("icons/unmute.ico")
+func SetMuteIcon() {
+	systray.SetTemplateIcon(muteIcon, muteIcon)
+}
 
+func SetUnmuteIcon() {
+	systray.SetTemplateIcon(unmuteIcon, unmuteIcon)
+}
+
+func onReady() {
 	systray.SetTitle("Mike")
 	systray.SetTooltip("Mike")
 
@@ -38,29 +46,26 @@ func onReady() {
 	quitItem := systray.AddMenuItem("Quit", "Quit")
 
 	currentMicrophone := GetCurrentMicrophone()
+	if currentMicrophone == nil {
+		return
+	}
 
 	// set icon based on initial mute state
 	if currentMicrophone.IsMuted() {
-		systray.SetTemplateIcon(muteIcon, muteIcon)
+		SetMuteIcon()
 	} else {
-		systray.SetTemplateIcon(unmuteIcon, unmuteIcon)
+		SetUnmuteIcon()
 	}
 
 	// listen for menu item clicks
-	go func() {
-		for {
-			select {
-			case <-muteItem.ClickedCh:
-				if currentMicrophone.ToggleMute() {
-					systray.SetTemplateIcon(muteIcon, muteIcon)
-				} else {
-					systray.SetTemplateIcon(unmuteIcon, unmuteIcon)
-				}
-			case <-quitItem.ClickedCh:
-				systray.Quit()
-			}
+	for {
+		select {
+		case <-muteItem.ClickedCh:
+			ToggleMute()
+		case <-quitItem.ClickedCh:
+			systray.Quit()
 		}
-	}()
+	}
 }
 
 func onExit() {

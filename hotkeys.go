@@ -18,14 +18,18 @@ type MSG struct {
 	WPARAM int16
 	LPARAM int64
 	DWORD  int32
-	POINT  struct{ X, Y int64 }
+	POINT  struct {
+		X int64
+		Y int64
+	}
 }
 
 const (
-	ModAlt = 1 << iota
-	ModCtrl
-	ModShift
-	ModWin
+	ModAlt      = 0x0001
+	ModCtrl     = 0x0002
+	ModShift    = 0x0004
+	ModWin      = 0x0008
+	ModNoRepeat = 0x4000
 )
 
 var keys map[string]int = map[string]int{
@@ -99,7 +103,7 @@ func RegisterHotkeys() {
 	getmsg := user32.MustFindProc("GetMessageW")
 
 	hotkeys := []*Hotkey{
-		getHotkey("O", true, false, true, false),
+		getHotkey("A", true, false, false, false, true),
 	}
 
 	for i, hotkey := range hotkeys {
@@ -109,26 +113,26 @@ func RegisterHotkeys() {
 	for {
 		msg := &MSG{}
 		getmsg.Call(uintptr(unsafe.Pointer(msg)), 0, 0, 0)
-
-		switch msg.WPARAM {
-		case 1:
-			mic := GetCurrentMicrophone()
-			mic.ToggleMute()
+		if msg.WPARAM == 1 {
+			ToggleMute()
 		}
 
 		time.Sleep(time.Millisecond * 50)
 	}
 }
 
-func getHotkey(key string, ctrl bool, shift bool, alt bool, windows bool) *Hotkey {
+func getHotkey(key string, ctrl bool, shift bool, alt bool, windows bool, norepeat bool) *Hotkey {
 	if keycode, ok := keys[strings.ToUpper(key)]; ok {
-		modifiers := getModifiers(ctrl, shift, alt, windows)
-		return &Hotkey{Modifiers: modifiers, KeyCode: keycode}
+		modifiers := getModifiers(ctrl, shift, alt, windows, norepeat)
+		return &Hotkey{
+			Modifiers: modifiers,
+			KeyCode:   keycode,
+		}
 	}
 	return nil
 }
 
-func getModifiers(ctrl bool, shift bool, alt bool, windows bool) int {
+func getModifiers(ctrl bool, shift bool, alt bool, windows bool, norepeat bool) int {
 	modifiers := 0
 	if ctrl {
 		modifiers += ModCtrl
@@ -141,6 +145,9 @@ func getModifiers(ctrl bool, shift bool, alt bool, windows bool) int {
 	}
 	if windows {
 		modifiers += ModWin
+	}
+	if norepeat {
+		modifiers += ModNoRepeat // holding down the hotkey won't continuously trigger keybind
 	}
 	return modifiers
 }
