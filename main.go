@@ -1,6 +1,13 @@
 package main
 
+const (
+	AppName   = "mike"
+	AppAuthor = "Moons"
+	AppUrl    = "https://github.com/m-oons/mike"
+)
+
 func main() {
+	LoadConfig()
 	InitializeCOM()
 	go SetupSpeaker()
 	go CreateTray()
