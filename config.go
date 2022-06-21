@@ -8,17 +8,7 @@ import (
 )
 
 type Config struct {
-	Hotkeys []ConfigHotkey `json:"hotkeys"`
-}
-
-type ConfigHotkey struct {
-	Action   string `json:"action"`
-	KeyCode  int    `json:"keycode"`
-	Ctrl     bool   `json:"ctrl"`
-	Shift    bool   `json:"shift"`
-	Alt      bool   `json:"alt"`
-	Win      bool   `json:"win"`
-	NoRepeat bool   `json:"norepeat"`
+	Hotkeys []Hotkey `json:"hotkeys"`
 }
 
 func (config Config) Save() {
@@ -61,7 +51,7 @@ func ensureConfig() bool {
 
 	if !configFileExists() {
 		config := Config{
-			Hotkeys: make([]ConfigHotkey, 0),
+			Hotkeys: make([]Hotkey, 0),
 		}
 		return writeConfig(config)
 	}

@@ -8,8 +8,13 @@ import (
 )
 
 type Hotkey struct {
-	Modifiers int
-	KeyCode   int
+	Action   string `json:"action"`
+	Key      string `json:"key"`
+	Ctrl     bool   `json:"ctrl"`
+	Shift    bool   `json:"shift"`
+	Alt      bool   `json:"alt"`
+	Win      bool   `json:"win"`
+	NoRepeat bool   `json:"norepeat"`
 }
 
 type MSG struct {
@@ -102,51 +107,49 @@ func RegisterHotkeys() {
 	reghotkey := user32.MustFindProc("RegisterHotKey")
 	getmsg := user32.MustFindProc("GetMessageW")
 
-	hotkeys := []*Hotkey{
-		getHotkey("A", true, false, false, false, true),
-	}
-
-	for i, hotkey := range hotkeys {
-		reghotkey.Call(0, uintptr(i+1), uintptr(hotkey.Modifiers), uintptr(hotkey.KeyCode))
+	for i, hotkey := range Conf.Hotkeys {
+		keycode, ok := keys[strings.ToUpper(hotkey.Key)]
+		if !ok {
+			continue
+		}
+		reghotkey.Call(0, uintptr(i+1), uintptr(hotkey.Modifiers()), uintptr(keycode))
 	}
 
 	for {
 		msg := &MSG{}
 		getmsg.Call(uintptr(unsafe.Pointer(msg)), 0, 0, 0)
-		if msg.WPARAM == 1 {
-			ToggleMute()
+
+		if msg.WPARAM <= int16(len(Conf.Hotkeys)) {
+			hotkey := Conf.Hotkeys[msg.WPARAM-1]
+			switch strings.ToLower(hotkey.Action) {
+			case "mute":
+				Mute()
+			case "unmute":
+				Unmute()
+			case "toggle":
+				ToggleMute()
+			}
 		}
 
 		time.Sleep(time.Millisecond * 50)
 	}
 }
 
-func getHotkey(key string, ctrl bool, shift bool, alt bool, windows bool, norepeat bool) *Hotkey {
-	if keycode, ok := keys[strings.ToUpper(key)]; ok {
-		modifiers := getModifiers(ctrl, shift, alt, windows, norepeat)
-		return &Hotkey{
-			Modifiers: modifiers,
-			KeyCode:   keycode,
-		}
-	}
-	return nil
-}
-
-func getModifiers(ctrl bool, shift bool, alt bool, windows bool, norepeat bool) int {
+func (hotkey *Hotkey) Modifiers() int {
 	modifiers := 0
-	if ctrl {
+	if hotkey.Ctrl {
 		modifiers += ModCtrl
 	}
-	if shift {
+	if hotkey.Shift {
 		modifiers += ModShift
 	}
-	if alt {
+	if hotkey.Alt {
 		modifiers += ModAlt
 	}
-	if windows {
+	if hotkey.Win {
 		modifiers += ModWin
 	}
-	if norepeat {
+	if hotkey.NoRepeat {
 		modifiers += ModNoRepeat // holding down the hotkey won't continuously trigger keybind
 	}
 	return modifiers

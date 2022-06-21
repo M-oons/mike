@@ -6,8 +6,10 @@ const (
 	AppUrl    = "https://github.com/m-oons/mike"
 )
 
+var Conf Config
+
 func main() {
-	LoadConfig()
+	Conf = LoadConfig()
 	InitializeCOM()
 	go SetupSpeaker()
 	go CreateTray()
