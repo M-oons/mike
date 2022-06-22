@@ -3,7 +3,6 @@ package main
 import (
 	"strings"
 	"syscall"
-	"time"
 	"unsafe"
 )
 
@@ -112,6 +111,7 @@ func RegisterHotkeys() {
 		if !ok {
 			continue
 		}
+
 		reghotkey.Call(0, uintptr(i+1), uintptr(hotkey.Modifiers()), uintptr(keycode))
 	}
 
@@ -130,8 +130,6 @@ func RegisterHotkeys() {
 				ToggleMute()
 			}
 		}
-
-		time.Sleep(time.Millisecond * 50)
 	}
 }
 

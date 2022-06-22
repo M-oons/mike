@@ -1,15 +1,13 @@
 package main
 
 import (
-	"os"
-	"path/filepath"
-	"strings"
+	"bytes"
 	"time"
 
 	"github.com/faiface/beep"
-	"github.com/faiface/beep/mp3"
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/beep/wav"
+	"github.com/m-oons/mike/assets"
 )
 
 type Sound struct {
@@ -20,13 +18,12 @@ type Sound struct {
 var sounds map[string]Sound = make(map[string]Sound)
 
 func SetupSpeaker() {
-	loadSound("sounds/mute.wav")
-	loadSound("sounds/unmute.wav")
+	loadSound("mute", assets.MuteSound)
+	loadSound("unmute", assets.UnmuteSound)
 }
 
 func PlaySound(name string) {
 	sound, ok := sounds[name]
-
 	if !ok {
 		return
 	}
@@ -36,13 +33,8 @@ func PlaySound(name string) {
 	speaker.Play(streamer)
 }
 
-func loadSound(filename string) {
-	file, err := os.Open(filename)
-	if err != nil {
-		return
-	}
-
-	streamer, format, err := decodeFile(file)
+func loadSound(name string, data []byte) {
+	streamer, format, err := decodeWav(data)
 	if err != nil {
 		return
 	}
@@ -56,14 +48,10 @@ func loadSound(filename string) {
 		Format: format,
 	}
 
-	name := filepath.Base(strings.TrimSuffix(filename, filepath.Ext(filename)))
 	sounds[name] = sound
 }
 
-func decodeFile(file *os.File) (streamer beep.StreamSeekCloser, format beep.Format, err error) {
-	filename := file.Name()
-	if strings.HasSuffix(filename, ".wav") {
-		return wav.Decode(file)
-	}
-	return mp3.Decode(file)
+func decodeWav(data []byte) (streamer beep.StreamSeekCloser, format beep.Format, err error) {
+	reader := bytes.NewReader(data)
+	return wav.Decode(reader)
 }

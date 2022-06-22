@@ -1,22 +1,22 @@
 package main
 
 import (
-	"github.com/getlantern/systray"
-)
+	"os"
 
-var muteIcon []byte = GetIconData("icons/mute.ico")
-var unmuteIcon []byte = GetIconData("icons/unmute.ico")
+	"github.com/getlantern/systray"
+	"github.com/m-oons/mike/assets"
+)
 
 func CreateTray() {
 	systray.Run(onReady, onExit)
 }
 
 func SetMuteIcon() {
-	systray.SetTemplateIcon(muteIcon, muteIcon)
+	systray.SetTemplateIcon(assets.MuteIcon, assets.MuteIcon)
 }
 
 func SetUnmuteIcon() {
-	systray.SetTemplateIcon(unmuteIcon, unmuteIcon)
+	systray.SetTemplateIcon(assets.UnmuteIcon, assets.UnmuteIcon)
 }
 
 func onReady() {
@@ -69,5 +69,5 @@ func onReady() {
 }
 
 func onExit() {
-
+	os.Exit(0)
 }
