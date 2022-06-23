@@ -1,22 +1,16 @@
-package main
+package tray
 
 import (
 	"os"
 
 	"github.com/getlantern/systray"
+	"github.com/m-oons/mike/actions"
 	"github.com/m-oons/mike/assets"
+	"github.com/m-oons/mike/devices"
 )
 
 func CreateTray() {
 	systray.Run(onReady, onExit)
-}
-
-func SetMuteIcon() {
-	systray.SetTemplateIcon(assets.MuteIcon, assets.MuteIcon)
-}
-
-func SetUnmuteIcon() {
-	systray.SetTemplateIcon(assets.UnmuteIcon, assets.UnmuteIcon)
 }
 
 func onReady() {
@@ -45,23 +39,23 @@ func onReady() {
 
 	quitItem := systray.AddMenuItem("Quit", "Quit")
 
-	currentMicrophone := GetCurrentMicrophone()
+	currentMicrophone := devices.GetCurrentMicrophone()
 	if currentMicrophone == nil {
 		return
 	}
 
 	// set icon based on initial mute state
 	if currentMicrophone.IsMuted() {
-		SetMuteIcon()
+		assets.SetMuteIcon()
 	} else {
-		SetUnmuteIcon()
+		assets.SetUnmuteIcon()
 	}
 
 	// listen for menu item clicks
 	for {
 		select {
 		case <-muteItem.ClickedCh:
-			ToggleMute()
+			actions.ToggleMute()
 		case <-quitItem.ClickedCh:
 			systray.Quit()
 		}

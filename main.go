@@ -1,61 +1,17 @@
 package main
 
-const (
-	AppName   = "mike"
-	AppAuthor = "Moons"
-	AppUrl    = "https://github.com/m-oons/mike"
+import (
+	"github.com/m-oons/mike/config"
+	"github.com/m-oons/mike/devices"
+	"github.com/m-oons/mike/hotkeys"
+	"github.com/m-oons/mike/player"
+	"github.com/m-oons/mike/tray"
 )
 
-var Conf Config
-
 func main() {
-	Conf = LoadConfig()
-	InitializeCOM()
-	go SetupSpeaker()
-	go CreateTray()
-	RegisterHotkeys()
-}
-
-func Mute() {
-	mic := GetCurrentMicrophone()
-	if mic == nil {
-		return
-	}
-
-	if !mic.Mute() {
-		return
-	}
-
-	PlaySound("mute")
-	SetMuteIcon()
-}
-
-func Unmute() {
-	mic := GetCurrentMicrophone()
-	if mic == nil {
-		return
-	}
-
-	if !mic.Unmute() {
-		return
-	}
-
-	PlaySound("unmute")
-	SetUnmuteIcon()
-}
-
-func ToggleMute() {
-	mic := GetCurrentMicrophone()
-	if mic == nil {
-		return
-	}
-
-	muted := mic.ToggleMute()
-	if muted {
-		PlaySound("mute")
-		SetMuteIcon()
-	} else {
-		PlaySound("unmute")
-		SetUnmuteIcon()
-	}
+	config.Load()
+	devices.InitializeCOM()
+	go player.SetupPlayer()
+	go tray.CreateTray()
+	hotkeys.RegisterHotkeys()
 }

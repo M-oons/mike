@@ -1,41 +1,52 @@
-package main
+package config
 
 import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/m-oons/mike/info"
 )
+
+var Current Config
 
 type Config struct {
 	Hotkeys []Hotkey `json:"hotkeys"`
 }
 
-func (config Config) Save() {
+type Hotkey struct {
+	Action   string `json:"action"`
+	Key      string `json:"key"`
+	Ctrl     bool   `json:"ctrl"`
+	Shift    bool   `json:"shift"`
+	Alt      bool   `json:"alt"`
+	Win      bool   `json:"win"`
+	NoRepeat bool   `json:"norepeat"`
+}
+
+func Save() {
 	if !ensureConfig() {
 		return
 	}
 
-	writeConfig(config)
+	writeConfig(Current)
 }
 
-func LoadConfig() Config {
-	config := Config{}
+func Load() {
+	Current = Config{}
 
 	if !ensureConfig() {
-		return config
+		return
 	}
 
 	dir := getConfigPath()
 	if dir == "" {
-		return config
+		return
 	}
 
 	data := readConfig()
-
-	json.Unmarshal(data, &config)
-
-	return config
+	json.Unmarshal(data, &Current)
 }
 
 func ensureConfig() bool {
@@ -78,7 +89,7 @@ func getConfigPath() string {
 		return ""
 	}
 
-	return filepath.Join(roaming, AppAuthor, AppName)
+	return filepath.Join(roaming, info.AppAuthor, info.AppName)
 }
 
 func readConfig() []byte {

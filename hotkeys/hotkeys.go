@@ -1,20 +1,13 @@
-package main
+package hotkeys
 
 import (
 	"strings"
 	"syscall"
 	"unsafe"
-)
 
-type Hotkey struct {
-	Action   string `json:"action"`
-	Key      string `json:"key"`
-	Ctrl     bool   `json:"ctrl"`
-	Shift    bool   `json:"shift"`
-	Alt      bool   `json:"alt"`
-	Win      bool   `json:"win"`
-	NoRepeat bool   `json:"norepeat"`
-}
+	"github.com/m-oons/mike/actions"
+	"github.com/m-oons/mike/config"
+)
 
 type MSG struct {
 	HWND   uintptr
@@ -106,49 +99,33 @@ func RegisterHotkeys() {
 	reghotkey := user32.MustFindProc("RegisterHotKey")
 	getmsg := user32.MustFindProc("GetMessageW")
 
-	for i, hotkey := range Conf.Hotkeys {
-		keycode, ok := keys[strings.ToUpper(hotkey.Key)]
-		if !ok {
-			continue
+	for i, confkey := range config.Current.Hotkeys {
+		hotkey := Hotkey{
+			Action:   confkey.Action,
+			Key:      confkey.Key,
+			Ctrl:     confkey.Ctrl,
+			Shift:    confkey.Shift,
+			Alt:      confkey.Alt,
+			Win:      confkey.Win,
+			NoRepeat: confkey.NoRepeat,
 		}
-
-		reghotkey.Call(0, uintptr(i+1), uintptr(hotkey.Modifiers()), uintptr(keycode))
+		reghotkey.Call(0, uintptr(i+1), uintptr(hotkey.Modifiers()), uintptr(hotkey.KeyCode()))
 	}
 
 	for {
 		msg := &MSG{}
 		getmsg.Call(uintptr(unsafe.Pointer(msg)), 0, 0, 0)
 
-		if msg.WPARAM <= int16(len(Conf.Hotkeys)) {
-			hotkey := Conf.Hotkeys[msg.WPARAM-1]
+		if msg.WPARAM <= int16(len(config.Current.Hotkeys)) {
+			hotkey := config.Current.Hotkeys[msg.WPARAM-1]
 			switch strings.ToLower(hotkey.Action) {
 			case "mute":
-				Mute()
+				actions.Mute()
 			case "unmute":
-				Unmute()
+				actions.Unmute()
 			case "toggle":
-				ToggleMute()
+				actions.ToggleMute()
 			}
 		}
 	}
-}
-
-func (hotkey *Hotkey) Modifiers() int {
-	modifiers := 0
-	if hotkey.Ctrl {
-		modifiers += ModCtrl
-	}
-	if hotkey.Shift {
-		modifiers += ModShift
-	}
-	if hotkey.Alt {
-		modifiers += ModAlt
-	}
-	if hotkey.Win {
-		modifiers += ModWin
-	}
-	if hotkey.NoRepeat {
-		modifiers += ModNoRepeat // holding down the hotkey won't continuously trigger keybind
-	}
-	return modifiers
 }

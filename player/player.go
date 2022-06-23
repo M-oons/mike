@@ -1,4 +1,4 @@
-package main
+package player
 
 import (
 	"bytes"
@@ -10,14 +10,9 @@ import (
 	"github.com/m-oons/mike/assets"
 )
 
-type Sound struct {
-	Buffer *beep.Buffer
-	Format beep.Format
-}
-
 var sounds map[string]Sound = make(map[string]Sound)
 
-func SetupSpeaker() {
+func SetupPlayer() {
 	loadSound("mute", assets.MuteSound)
 	loadSound("unmute", assets.UnmuteSound)
 }
