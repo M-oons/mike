@@ -1,3 +1,3 @@
 build:
 	go-winres make
-	go build .
+	go build -ldflags -H=windowsgui .
