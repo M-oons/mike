@@ -13,6 +13,7 @@ var Current Config
 
 type Config struct {
 	Hotkeys []Hotkey `json:"hotkeys"`
+	Sounds  bool     `json:"sounds"`
 }
 
 type Hotkey struct {
@@ -25,7 +26,7 @@ type Hotkey struct {
 	NoRepeat bool   `json:"norepeat"`
 }
 
-func Save() {
+func SaveConfig() {
 	if !ensureConfig() {
 		return
 	}
@@ -33,7 +34,7 @@ func Save() {
 	writeConfig(Current)
 }
 
-func Load() {
+func LoadConfig() {
 	Current = Config{}
 
 	if !ensureConfig() {
@@ -61,10 +62,7 @@ func ensureConfig() bool {
 	}
 
 	if !configFileExists() {
-		config := Config{
-			Hotkeys: make([]Hotkey, 0),
-		}
-		return writeConfig(config)
+		return writeConfig(defaultConfig())
 	}
 
 	return true
@@ -89,7 +87,7 @@ func getConfigPath() string {
 		return ""
 	}
 
-	return filepath.Join(roaming, info.AppAuthor, info.AppName)
+	return filepath.Join(roaming, info.Author, info.AppName)
 }
 
 func readConfig() []byte {
@@ -116,4 +114,11 @@ func writeConfig(config Config) bool {
 	err := ioutil.WriteFile(filepath.Join(dir, "config.json"), data, 0644)
 
 	return err == nil
+}
+
+func defaultConfig() Config {
+	return Config{
+		Hotkeys: make([]Hotkey, 0),
+		Sounds:  true,
+	}
 }

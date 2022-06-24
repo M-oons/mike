@@ -2,6 +2,7 @@ package actions
 
 import (
 	"github.com/m-oons/mike/assets"
+	"github.com/m-oons/mike/config"
 	"github.com/m-oons/mike/devices"
 	"github.com/m-oons/mike/player"
 )
@@ -16,7 +17,9 @@ func Mute() {
 		return
 	}
 
-	player.PlaySound("mute")
+	if config.Current.Sounds {
+		player.PlaySound("mute")
+	}
 	assets.SetMuteIcon()
 }
 
@@ -30,7 +33,9 @@ func Unmute() {
 		return
 	}
 
-	player.PlaySound("unmute")
+	if config.Current.Sounds {
+		player.PlaySound("unmute")
+	}
 	assets.SetUnmuteIcon()
 }
 
@@ -41,11 +46,16 @@ func ToggleMute() {
 	}
 
 	muted := mic.ToggleMute()
+	sounds := config.Current.Sounds
 	if muted {
-		player.PlaySound("mute")
+		if sounds {
+			player.PlaySound("mute")
+		}
 		assets.SetMuteIcon()
 	} else {
-		player.PlaySound("unmute")
+		if sounds {
+			player.PlaySound("unmute")
+		}
 		assets.SetUnmuteIcon()
 	}
 }

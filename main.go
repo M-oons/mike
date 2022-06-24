@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	config.Load()
+	config.LoadConfig()
 	devices.InitializeCOM()
 	go player.SetupPlayer()
 	go tray.CreateTray()
