@@ -17,9 +17,7 @@ func Mute() {
 		return
 	}
 
-	if config.Current.Sounds {
-		player.PlaySound("mute")
-	}
+	tryPlaySound("mute")
 	assets.SetMuteIcon()
 }
 
@@ -33,9 +31,7 @@ func Unmute() {
 		return
 	}
 
-	if config.Current.Sounds {
-		player.PlaySound("unmute")
-	}
+	tryPlaySound("unmute")
 	assets.SetUnmuteIcon()
 }
 
@@ -46,16 +42,19 @@ func ToggleMute() {
 	}
 
 	muted := mic.ToggleMute()
-	sounds := config.Current.Sounds
 	if muted {
-		if sounds {
-			player.PlaySound("mute")
-		}
+		tryPlaySound("mute")
 		assets.SetMuteIcon()
 	} else {
-		if sounds {
-			player.PlaySound("unmute")
-		}
+		tryPlaySound("unmute")
 		assets.SetUnmuteIcon()
 	}
+}
+
+func tryPlaySound(sound string) {
+	if !config.Current.Sounds.Enabled {
+		return
+	}
+
+	player.PlaySound(sound, config.Current.Sounds.Volume)
 }

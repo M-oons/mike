@@ -2,9 +2,11 @@ package player
 
 import (
 	"bytes"
+	"math"
 	"time"
 
 	"github.com/faiface/beep"
+	"github.com/faiface/beep/effects"
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/beep/wav"
 	"github.com/m-oons/mike/assets"
@@ -17,15 +19,16 @@ func SetupPlayer() {
 	loadSound("unmute", assets.UnmuteSound)
 }
 
-func PlaySound(name string) {
+func PlaySound(name string, volume int) {
 	sound, ok := sounds[name]
 	if !ok {
 		return
 	}
 
 	streamer := sound.Buffer.Streamer(0, sound.Buffer.Len())
+	vol := getVolume(streamer, volume)
 	speaker.Init(sound.Format.SampleRate, sound.Format.SampleRate.N(time.Second/10))
-	speaker.Play(streamer)
+	speaker.Play(vol)
 }
 
 func loadSound(name string, data []byte) {
@@ -44,6 +47,16 @@ func loadSound(name string, data []byte) {
 	}
 
 	sounds[name] = sound
+}
+
+func getVolume(streamer beep.Streamer, volume int) *effects.Volume {
+	vol := math.Log2(float64(volume) / 100)
+	return &effects.Volume{
+		Streamer: streamer,
+		Base:     2,
+		Volume:   vol,
+		Silent:   false,
+	}
 }
 
 func decodeWav(data []byte) (streamer beep.StreamSeekCloser, format beep.Format, err error) {

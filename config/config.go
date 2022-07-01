@@ -13,7 +13,7 @@ var Current Config
 
 type Config struct {
 	Hotkeys []Hotkey `json:"hotkeys"`
-	Sounds  bool     `json:"sounds"`
+	Sounds  Sounds   `json:"sounds"`
 }
 
 type Hotkey struct {
@@ -24,6 +24,11 @@ type Hotkey struct {
 	Alt      bool   `json:"alt"`
 	Win      bool   `json:"win"`
 	NoRepeat bool   `json:"norepeat"`
+}
+
+type Sounds struct {
+	Enabled bool `json:"enabled"`
+	Volume  int  `json:"volume"`
 }
 
 func SaveConfig() {
@@ -119,6 +124,9 @@ func writeConfig(config Config) bool {
 func defaultConfig() Config {
 	return Config{
 		Hotkeys: make([]Hotkey, 0),
-		Sounds:  true,
+		Sounds: Sounds{
+			Enabled: true,
+			Volume:  100,
+		},
 	}
 }
