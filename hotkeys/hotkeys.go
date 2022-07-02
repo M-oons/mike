@@ -94,10 +94,11 @@ var keys map[string]int = map[string]int{
 
 func RegisterHotkeys() {
 	user32 := syscall.MustLoadDLL("user32")
-	defer user32.Release()
 
 	reghotkey := user32.MustFindProc("RegisterHotKey")
 	getmsg := user32.MustFindProc("GetMessageW")
+
+	user32.Release()
 
 	for i, confkey := range config.Current.Hotkeys {
 		hotkey := Hotkey{
