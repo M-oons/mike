@@ -33,7 +33,7 @@ func (hotkey *Hotkey) Modifiers() int {
 }
 
 func (hotkey *Hotkey) KeyCode() int {
-	keycode, ok := keys[strings.ToUpper(hotkey.Key)]
+	keycode, ok := keys[strings.ToLower(hotkey.Key)]
 	if !ok {
 		return -1
 	}
