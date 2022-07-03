@@ -3,17 +3,16 @@ package hotkeys
 import "strings"
 
 type Hotkey struct {
-	Action   string
-	Key      string
-	Ctrl     bool
-	Shift    bool
-	Alt      bool
-	Win      bool
-	NoRepeat bool
+	Action string
+	Key    string
+	Ctrl   bool
+	Shift  bool
+	Alt    bool
+	Win    bool
 }
 
 func (hotkey *Hotkey) Modifiers() int {
-	modifiers := 0
+	modifiers := ModNoRepeat
 	if hotkey.Ctrl {
 		modifiers += ModCtrl
 	}
@@ -25,9 +24,6 @@ func (hotkey *Hotkey) Modifiers() int {
 	}
 	if hotkey.Win {
 		modifiers += ModWin
-	}
-	if hotkey.NoRepeat {
-		modifiers += ModNoRepeat // holding down the hotkey won't continuously trigger keybind
 	}
 	return modifiers
 }

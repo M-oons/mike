@@ -26,7 +26,7 @@ const (
 	ModCtrl     = 0x0002
 	ModShift    = 0x0004
 	ModWin      = 0x0008
-	ModNoRepeat = 0x4000
+	ModNoRepeat = 0x4000 // holding down the hotkey won't continuously trigger keybind
 )
 
 func RegisterHotkeys() {
@@ -39,13 +39,12 @@ func RegisterHotkeys() {
 
 	for i, confkey := range config.Current.Hotkeys {
 		hotkey := Hotkey{
-			Action:   confkey.Action,
-			Key:      confkey.Key,
-			Ctrl:     confkey.Ctrl,
-			Shift:    confkey.Shift,
-			Alt:      confkey.Alt,
-			Win:      confkey.Win,
-			NoRepeat: confkey.NoRepeat,
+			Action: confkey.Action,
+			Key:    confkey.Key,
+			Ctrl:   confkey.Ctrl,
+			Shift:  confkey.Shift,
+			Alt:    confkey.Alt,
+			Win:    confkey.Win,
 		}
 		reghotkey.Call(0, uintptr(i+1), uintptr(hotkey.Modifiers()), uintptr(hotkey.KeyCode()))
 	}
