@@ -10,23 +10,28 @@ import (
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/beep/wav"
 	"github.com/m-oons/mike/assets"
+	"github.com/m-oons/mike/config"
 )
 
 var sounds map[string]Sound = make(map[string]Sound)
 
-func SetupPlayer() {
+func Setup() {
 	loadSound("mute", assets.MuteSound)
 	loadSound("unmute", assets.UnmuteSound)
 }
 
-func PlaySound(name string, volume int) {
+func PlaySound(name string) {
+	if !config.Current.Sounds.Enabled {
+		return
+	}
+
 	sound, ok := sounds[name]
 	if !ok {
 		return
 	}
 
 	streamer := sound.Buffer.Streamer(0, sound.Buffer.Len())
-	vol := getVolume(streamer, volume)
+	vol := getVolume(streamer, config.Current.Sounds.Volume)
 	speaker.Init(sound.Format.SampleRate, sound.Format.SampleRate.N(time.Second/10))
 	speaker.Play(vol)
 }

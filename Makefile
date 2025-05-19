@@ -1,13 +1,14 @@
-ifeq ($(OS), Windows_NT)
-    RM = cmd \/C del \/Q \/F
-else
-    RM = rm -f
-endif
+TOOLS = \
+	github.com/tc-hib/go-winres@latest
+
+.PHONY: all clean install
 
 all: clean
 	go-winres make
-	go build -ldflags -H=windowsgui .
+	go build -ldflags -H=windowsgui -o bin/ .
 
-.PHONY: clean
 clean:
-	$(RM) $(wildcard rsrc_*.syso)
+	@-del /Q /F $(wildcard rsrc_*.syso)
+
+install:
+	for %%i in ($(TOOLS)) do go install %%i

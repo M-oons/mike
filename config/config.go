@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -12,11 +11,12 @@ import (
 var Current Config
 
 type Config struct {
-	Hotkeys []Hotkey `json:"hotkeys"`
-	Sounds  Sounds   `json:"sounds"`
+	Hotkeys    []ConfigHotkey   `json:"hotkeys"`
+	Sounds     ConfigSounds     `json:"sounds"`
+	Controller ConfigController `json:"controller"`
 }
 
-type Hotkey struct {
+type ConfigHotkey struct {
 	Action   string `json:"action"`
 	Key      string `json:"key"`
 	Ctrl     bool   `json:"ctrl"`
@@ -26,12 +26,22 @@ type Hotkey struct {
 	NoRepeat bool   `json:"norepeat"`
 }
 
-type Sounds struct {
+type ConfigSounds struct {
 	Enabled bool `json:"enabled"`
 	Volume  int  `json:"volume"`
 }
 
-func SaveConfig() {
+type ConfigController struct {
+	Type        string                      `json:"type"`
+	Voicemeeter ConfigControllerVoicemeeter `json:"voicemeeter"`
+}
+
+type ConfigControllerVoicemeeter struct {
+	RemoteDLLPath string `json:"remoteDLLPath"`
+	Output        byte   `json:"output"`
+}
+
+func Save() {
 	if !ensureConfig() {
 		return
 	}
@@ -39,7 +49,7 @@ func SaveConfig() {
 	writeConfig(Current)
 }
 
-func LoadConfig() {
+func Load() {
 	Current = Config{}
 
 	if !ensureConfig() {
@@ -92,7 +102,7 @@ func getConfigPath() string {
 		return ""
 	}
 
-	return filepath.Join(roaming, info.Author, info.AppName)
+	return filepath.Join(roaming, info.AppName)
 }
 
 func readConfig() []byte {
@@ -101,7 +111,7 @@ func readConfig() []byte {
 		return nil
 	}
 
-	data, err := ioutil.ReadFile(filepath.Join(dir, "config.json"))
+	data, err := os.ReadFile(filepath.Join(dir, "config.json"))
 	if err != nil {
 		return nil
 	}
@@ -116,17 +126,24 @@ func writeConfig(config Config) bool {
 	}
 
 	data, _ := json.MarshalIndent(config, "", "\t")
-	err := ioutil.WriteFile(filepath.Join(dir, "config.json"), data, 0644)
+	err := os.WriteFile(filepath.Join(dir, "config.json"), data, 0644)
 
 	return err == nil
 }
 
 func defaultConfig() Config {
 	return Config{
-		Hotkeys: make([]Hotkey, 0),
-		Sounds: Sounds{
+		Hotkeys: make([]ConfigHotkey, 0),
+		Sounds: ConfigSounds{
 			Enabled: true,
 			Volume:  100,
+		},
+		Controller: ConfigController{
+			Type: "windows",
+			Voicemeeter: ConfigControllerVoicemeeter{
+				RemoteDLLPath: "C:/Program Files (x86)/VB/Voicemeeter/VoicemeeterRemote64.dll",
+				Output:        1,
+			},
 		},
 	}
 }

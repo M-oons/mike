@@ -1,12 +1,13 @@
 package hotkeys
 
 import (
+	"runtime"
 	"strings"
 	"syscall"
 	"unsafe"
 
-	"github.com/m-oons/mike/actions"
 	"github.com/m-oons/mike/config"
+	"github.com/m-oons/mike/core"
 )
 
 type MSG struct {
@@ -29,7 +30,9 @@ const (
 	ModNoRepeat = 0x4000 // holding down the hotkey won't continuously trigger keybind
 )
 
-func RegisterHotkeys() {
+func Register() {
+	runtime.LockOSThread()
+
 	user32 := syscall.MustLoadDLL("user32")
 
 	reghotkey := user32.MustFindProc("RegisterHotKey")
@@ -57,11 +60,11 @@ func RegisterHotkeys() {
 			hotkey := config.Current.Hotkeys[msg.WPARAM-1]
 			switch strings.ToLower(hotkey.Action) {
 			case "mute":
-				actions.Mute()
+				core.Mute()
 			case "unmute":
-				actions.Unmute()
+				core.Unmute()
 			case "toggle":
-				actions.ToggleMute()
+				core.ToggleMute()
 			}
 		}
 	}

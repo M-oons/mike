@@ -4,12 +4,11 @@ import (
 	"os"
 
 	"github.com/getlantern/systray"
-	"github.com/m-oons/mike/actions"
 	"github.com/m-oons/mike/assets"
-	"github.com/m-oons/mike/devices"
+	"github.com/m-oons/mike/core"
 )
 
-func CreateTray() {
+func Create() {
 	systray.Run(onReady, onExit)
 }
 
@@ -22,30 +21,15 @@ func onReady() {
 
 	systray.AddSeparator()
 
-	// micMenu := systray.AddMenuItem("Microphones", "Microphones")
-
-	// populate microphones list
-	// microphones := GetMicrophones()
-	// for _, mic := range microphones {
-	// 	micItem := micMenu.AddSubMenuItem(mic.Name(), mic.Name())
-	// 	if mic.Id() == currentMicrophone.Id() {
-	// 		micItem.Check()
-	// 	}
-	// }
-
 	muteItem := systray.AddMenuItem("Toggle Mute", "Toggle Mute")
 
 	systray.AddSeparator()
 
 	quitItem := systray.AddMenuItem("Quit", "Quit")
 
-	currentMicrophone := devices.GetCurrentMicrophone()
-	if currentMicrophone == nil {
-		return
-	}
-
 	// set icon based on initial mute state
-	if currentMicrophone.IsMuted() {
+	muted := core.IsMuted()
+	if muted {
 		assets.SetMuteIcon()
 	} else {
 		assets.SetUnmuteIcon()
@@ -55,7 +39,7 @@ func onReady() {
 	for {
 		select {
 		case <-muteItem.ClickedCh:
-			actions.ToggleMute()
+			core.ToggleMute()
 		case <-quitItem.ClickedCh:
 			systray.Quit()
 		}
@@ -63,5 +47,6 @@ func onReady() {
 }
 
 func onExit() {
+	core.Close()
 	os.Exit(0)
 }
