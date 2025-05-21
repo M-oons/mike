@@ -8,6 +8,7 @@ all: clean
 	go build -ldflags -H=windowsgui -o bin/ .
 
 clean:
+	@-rmdir /S /Q bin
 	@-del /Q /F $(wildcard rsrc_*.syso)
 
 install:

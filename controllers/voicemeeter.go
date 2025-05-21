@@ -56,9 +56,14 @@ func (c *VoicemeeterController) Init() error {
 	}
 	c.isParametersDirty = isParametersDirty
 
-	ret, _, _ := c.login.Call()
-	if ret != 0 {
-		return fmt.Errorf("error logging in to Voicemeeter, code: %d", ret)
+	// ensure Voicemeeter is running and login is successful
+	for {
+		ret, _, _ := c.login.Call()
+		if ret == 0 {
+			break
+		}
+		c.logout.Call()
+		time.Sleep(2 * time.Second)
 	}
 
 	switch config.Current.Controller.Voicemeeter.Output {
@@ -163,7 +168,7 @@ func (c *VoicemeeterController) Close() error {
 }
 
 func (c *VoicemeeterController) syncParameters() {
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		ret, _, _ := c.isParametersDirty.Call()
 		if ret == 0 {
 			break

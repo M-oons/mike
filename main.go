@@ -11,12 +11,12 @@ import (
 func main() {
 	config.Load()
 
+	go tray.Create()
+
 	core.Setup()
 	defer core.Close()
 
 	player.Setup()
 
-	go hotkeys.Register()
-
-	tray.Create()
+	hotkeys.Register()
 }

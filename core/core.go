@@ -8,6 +8,7 @@ import (
 )
 
 var controller controllers.Controller
+var ready bool
 
 func Setup() {
 	switch config.Current.Controller.Type {
@@ -20,10 +21,11 @@ func Setup() {
 	}
 
 	controller.Init()
+	ready = true
 }
 
 func Mute() {
-	if controller.Mute() != nil {
+	if !ready || controller.Mute() != nil {
 		return
 	}
 
@@ -32,7 +34,7 @@ func Mute() {
 }
 
 func Unmute() {
-	if controller.Unmute() != nil {
+	if !ready || controller.Unmute() != nil {
 		return
 	}
 
@@ -41,6 +43,10 @@ func Unmute() {
 }
 
 func ToggleMute() {
+	if !ready {
+		return
+	}
+
 	muted, err := controller.ToggleMute()
 	if err != nil {
 		return
@@ -56,6 +62,10 @@ func ToggleMute() {
 }
 
 func IsMuted() bool {
+	if !ready {
+		return false
+	}
+
 	muted, err := controller.IsMuted()
 	if err != nil {
 		return false

@@ -1,7 +1,6 @@
 package hotkeys
 
 import (
-	"runtime"
 	"strings"
 	"syscall"
 	"unsafe"
@@ -31,8 +30,6 @@ const (
 )
 
 func Register() {
-	runtime.LockOSThread()
-
 	user32 := syscall.MustLoadDLL("user32")
 
 	reghotkey := user32.MustFindProc("RegisterHotKey")
