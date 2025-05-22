@@ -4,13 +4,13 @@ Mike is a lightweight Windows utility for global audio output muting/unmuting. I
 
 ## Configuration
 
-The configuration file for Mike can be found in your user AppData roaming folder: `%APPDATA%/mike/config.json`. On first launch of Mike, the configuration file is created with it's default values. Each configuration section is outlined below.
+The configuration file for Mike can be found in your user AppData roaming folder: `%APPDATA%/mike/config.json`. When Mike is launched for the first time, the configuration file is created with its default values. Each configuration section is outlined below.
 
-| Key          | Type   | Description                    |
-|--------------|--------|--------------------------------|
-| `hotkeys`    | Array  | List of hotkey definitions     |
-| `sounds`     | Object | Sound output settings          |
-| `controller` | Object | Audio controller configuration |
+| Key          | Description                    | Type   |
+|--------------|--------------------------------|--------|
+| `hotkeys`    | List of hotkey definitions     | Array  |
+| `sounds`     | Sound output settings          | Object |
+| `controller` | Audio controller configuration | Object |
 
 ---
 
@@ -18,7 +18,7 @@ The configuration file for Mike can be found in your user AppData roaming folder
 
 Defines one or more hotkey bindings.
 
-| Key     | Description                          | Type    | Possible Values                                     |
+| Key     | Description                          | Type    | Possible values                                     |
 |---------|--------------------------------------|---------|-----------------------------------------------------|
 | action  | The action performed by the hotkey   | String  | `mute`, `unmute`, `toggle`                          |
 | key     | The main key for the hotkey          | String  | [See available hotkey keys](#available-hotkey-keys) |
@@ -43,7 +43,7 @@ Defines one or more hotkey bindings.
 
 Controls sound output for actions.
 
-| Key     | Description                     | Type    | Possible Values | Default |
+| Key     | Description                     | Type    | Possible values | Default |
 |---------|---------------------------------|---------|-----------------|---------|
 | enabled | Whether sound output is enabled | Boolean | `true`, `false` | `true`  |
 | volume  | Playback volume (%)             | Number  | -               | `100`   |
@@ -54,9 +54,9 @@ Controls sound output for actions.
 
 Configures which audio controller to use and specific options.
 
-| Key         | Description                                            | Type    | Possible Values          | Default   |
+| Key         | Description                                            | Type    | Possible values          | Default   |
 |-------------|--------------------------------------------------------|---------|--------------------------|-----------|
-| type        | Which controller backend to use                        | String  | `windows`, `voicemeeter` | `windows` |
+| type        | Which audio backend to use                             | String  | `windows`, `voicemeeter` | `windows` |
 | windows     | Windows specific controller options (currently unused) | Object  | -                        | -         |
 | voicemeeter | Voicemeeter specific controller options                | Object  | -                        | -         |
 
@@ -68,9 +68,9 @@ Windows specific controller options (currently unused).
 
 Voicemeeter specific controller options.
 
-| Key           | Description                                 | Type    | Possible Values                           | Default                                                         |
-|---------------|---------------------------------------------|---------|-------------------------------------------|-----------------------------------------------------------------|
-| remoteDLLPath | Full path to the Voicemeeter Remote API DLL | String  | -                                         | `C:/Program Files (x86)/VB/Voicemeeter/VoicemeeterRemote64.dll` |
-| output        | Voicemeeter virtual output number           | Number  | `1` (Virtual output B1)<br>`2` (Virtual output B2)        | `1`                                                             |
+| Key           | Description                                 | Type   | Possible values                                    | Default                                                         |
+|---------------|---------------------------------------------|--------|----------------------------------------------------|-----------------------------------------------------------------|
+| remoteDLLPath | Full path to the Voicemeeter Remote API DLL | String | -                                                  | `C:/Program Files (x86)/VB/Voicemeeter/VoicemeeterRemote64.dll` |
+| output        | Voicemeeter virtual output number           | Number | `1` (Virtual output B1)<br>`2` (Virtual output B2) | `1`                                                             |
 
 ---
