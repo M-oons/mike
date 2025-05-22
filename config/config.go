@@ -33,8 +33,11 @@ type ConfigSounds struct {
 
 type ConfigController struct {
 	Type        string                      `json:"type"`
+	Windows     ConfigControllerWindows     `json:"windows"`
 	Voicemeeter ConfigControllerVoicemeeter `json:"voicemeeter"`
 }
+
+type ConfigControllerWindows struct{}
 
 type ConfigControllerVoicemeeter struct {
 	RemoteDLLPath string `json:"remoteDLLPath"`
@@ -139,7 +142,8 @@ func defaultConfig() Config {
 			Volume:  100,
 		},
 		Controller: ConfigController{
-			Type: "windows",
+			Type:    "windows",
+			Windows: ConfigControllerWindows{},
 			Voicemeeter: ConfigControllerVoicemeeter{
 				RemoteDLLPath: "C:/Program Files (x86)/VB/Voicemeeter/VoicemeeterRemote64.dll",
 				Output:        1,
