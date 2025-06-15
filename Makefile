@@ -6,10 +6,10 @@ TOOLS = \
 all: clean
 	go-winres make
 	go build -ldflags -H=windowsgui -o bin/ .
+	@-del /Q /F rsrc_*.syso
 
 clean:
 	@-rmdir /S /Q bin
-	@-del /Q /F $(wildcard rsrc_*.syso)
 
 install:
 	for %%i in ($(TOOLS)) do go install %%i
