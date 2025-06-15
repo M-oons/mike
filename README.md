@@ -2,6 +2,12 @@
 
 Mike is a lightweight Windows utility for global audio output muting/unmuting. It supports customizable hotkeys, system tray integration, and works with both standard Windows audio devices and the Voicemeeter virtual audio mixer.
 
+## Install / Build
+```batch
+> make install
+> make
+```
+
 ## Configuration
 
 The configuration file for Mike can be found in your user AppData roaming folder: `%APPDATA%/mike/config.json`. When Mike is launched for the first time, the configuration file is created with its default values. Each configuration section is outlined below.
