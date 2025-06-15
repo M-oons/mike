@@ -10,8 +10,8 @@ import (
 	"github.com/faiface/beep/effects"
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/beep/wav"
-	"github.com/m-oons/mike/assets"
-	"github.com/m-oons/mike/config"
+	"github.com/m-oons/mike/internal/assets"
+	"github.com/m-oons/mike/internal/config"
 )
 
 type sound struct {

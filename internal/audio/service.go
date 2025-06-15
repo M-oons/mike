@@ -3,7 +3,7 @@ package audio
 import (
 	"fmt"
 
-	"github.com/m-oons/mike/events"
+	"github.com/m-oons/mike/internal/events"
 )
 
 type Controller interface {

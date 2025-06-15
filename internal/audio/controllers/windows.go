@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/go-ole/go-ole"
-	"github.com/m-oons/mike/config"
+	"github.com/m-oons/mike/internal/config"
 	"github.com/moutend/go-wca/pkg/wca"
 )
 

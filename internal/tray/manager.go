@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/getlantern/systray"
-	"github.com/m-oons/mike/assets"
-	"github.com/m-oons/mike/events"
+	"github.com/m-oons/mike/internal/assets"
+	"github.com/m-oons/mike/internal/events"
 )
 
 type Service interface {

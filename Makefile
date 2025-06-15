@@ -4,12 +4,12 @@ TOOLS = \
 .PHONY: all clean install
 
 all: clean
-	go-winres make
-	go build -ldflags -H=windowsgui -o bin/ .
-	@-del /Q /F rsrc_*.syso
+	go generate ./...
+	go build -ldflags -H=windowsgui -o bin/ ./...
+	-del /Q /F /S cmd\*.syso
 
 clean:
-	@-rmdir /S /Q bin
+	-rmdir /S /Q bin
 
 install:
 	for %%i in ($(TOOLS)) do go install %%i

@@ -1,5 +1,7 @@
 package main
 
+//go:generate go-winres make --in ./winres/winres.json --out ./resource
+
 import (
 	"context"
 	"log"
@@ -7,11 +9,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/m-oons/mike/audio"
-	"github.com/m-oons/mike/audio/controllers"
-	"github.com/m-oons/mike/config"
-	"github.com/m-oons/mike/hotkeys"
-	"github.com/m-oons/mike/tray"
+	"github.com/m-oons/mike/internal/audio"
+	"github.com/m-oons/mike/internal/audio/controllers"
+	"github.com/m-oons/mike/internal/config"
+	"github.com/m-oons/mike/internal/hotkeys"
+	"github.com/m-oons/mike/internal/tray"
 )
 
 func main() {

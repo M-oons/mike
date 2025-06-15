@@ -6,7 +6,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/m-oons/mike/config"
+	"github.com/m-oons/mike/internal/config"
 )
 
 type voicemeeterController struct {

@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/m-oons/mike/info"
+	"github.com/m-oons/mike/internal/info"
 )
 
 type Config struct {
