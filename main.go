@@ -1,22 +1,63 @@
 package main
 
 import (
+	"context"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/m-oons/mike/audio"
+	"github.com/m-oons/mike/audio/controllers"
 	"github.com/m-oons/mike/config"
-	"github.com/m-oons/mike/core"
 	"github.com/m-oons/mike/hotkeys"
-	"github.com/m-oons/mike/player"
 	"github.com/m-oons/mike/tray"
 )
 
 func main() {
-	config.Load()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	go tray.Create()
+	// load config
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("error loading config: %v", err)
+	}
 
-	core.Setup()
-	defer core.Close()
+	// setup services
+	controller := newController(cfg.Controller)
+	soundPlayer := audio.NewPlayer(cfg.Sounds)
+	audioService := audio.NewService(controller, soundPlayer)
+	if err := audioService.Setup(); err != nil {
+		log.Fatalf("error setting up audio service: %v", err)
+	}
+	defer audioService.Close()
 
-	player.Setup()
+	// setup managers
+	trayManager := tray.NewManager(audioService, cancel)
+	hotkeyManager := hotkeys.NewManager(audioService, cfg.Hotkeys)
 
-	hotkeys.Register()
+	// handle OS signals
+	go handleSignals(cancel)
+
+	// start managers
+	go trayManager.Start(ctx)
+	hotkeyManager.Start(ctx)
+}
+
+func handleSignals(cancel context.CancelFunc) {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	<-sigChan
+	cancel()
+}
+
+func newController(config config.ConfigController) audio.Controller {
+	var controller audio.Controller
+	if config.Type == "voicemeeter" {
+		controller = controllers.NewVoicemeeterController(config.Voicemeeter)
+	} else {
+		controller = controllers.NewWindowsController(config.Windows)
+	}
+	return controller
 }

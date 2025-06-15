@@ -2,36 +2,46 @@ package hotkeys
 
 import "strings"
 
-type Hotkey struct {
-	Action string
-	Key    string
-	Ctrl   bool
-	Shift  bool
-	Alt    bool
-	Win    bool
+const (
+	modAlt      = 0x0001
+	modCtrl     = 0x0002
+	modShift    = 0x0004
+	modWin      = 0x0008
+	modNoRepeat = 0x4000 // holding down the hotkey won't continuously trigger keybind
+)
+
+type hotkey struct {
+	action string
+	key    string
+	ctrl   bool
+	shift  bool
+	alt    bool
+	win    bool
 }
 
-func (hotkey *Hotkey) Modifiers() int {
-	modifiers := ModNoRepeat
-	if hotkey.Ctrl {
-		modifiers += ModCtrl
+func (hotkey *hotkey) modifiers() int {
+	modifiers := modNoRepeat
+	if hotkey.ctrl {
+		modifiers += modCtrl
 	}
-	if hotkey.Shift {
-		modifiers += ModShift
+	if hotkey.shift {
+		modifiers += modShift
 	}
-	if hotkey.Alt {
-		modifiers += ModAlt
+	if hotkey.alt {
+		modifiers += modAlt
 	}
-	if hotkey.Win {
-		modifiers += ModWin
+	if hotkey.win {
+		modifiers += modWin
 	}
+
 	return modifiers
 }
 
-func (hotkey *Hotkey) KeyCode() int {
-	keycode, ok := Keys[strings.ToLower(hotkey.Key)]
+func (hotkey *hotkey) code() int {
+	keycode, ok := keys[strings.ToLower(hotkey.key)]
 	if !ok {
 		return -1
 	}
+
 	return keycode
 }

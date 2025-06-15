@@ -2,13 +2,12 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/m-oons/mike/info"
 )
-
-var Current Config
 
 type Config struct {
 	Hotkeys    []ConfigHotkey   `json:"hotkeys"`
@@ -44,51 +43,45 @@ type ConfigControllerVoicemeeter struct {
 	Output        byte   `json:"output"`
 }
 
-func Save() {
-	if !ensureConfig() {
-		return
+func Load() (*Config, error) {
+	config := Config{}
+
+	if err := ensureConfig(); err != nil {
+		return nil, fmt.Errorf("error ensuring config exists: %w", err)
 	}
 
-	writeConfig(Current)
-}
-
-func Load() {
-	Current = Config{}
-
-	if !ensureConfig() {
-		return
-	}
-
-	dir := getConfigPath()
-	if dir == "" {
-		return
-	}
-
-	data := readConfig()
-	json.Unmarshal(data, &Current)
-}
-
-func ensureConfig() bool {
-	dir := getConfigPath()
-	if dir == "" {
-		return false
-	}
-
-	err := os.MkdirAll(dir, os.ModePerm)
+	data, err := readConfig()
 	if err != nil {
-		return false
+		return nil, fmt.Errorf("error reading config file")
+	}
+
+	if err := json.Unmarshal(data, &config); err != nil {
+		return nil, fmt.Errorf("error unmarshalling config JSON")
+	}
+
+	return &config, nil
+}
+
+func ensureConfig() error {
+	dir, err := getConfigPath()
+	if err != nil {
+		return err
+	}
+
+	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+		return err
 	}
 
 	if !configFileExists() {
 		return writeConfig(defaultConfig())
 	}
 
-	return true
+	return nil
 }
 
 func configFileExists() bool {
-	dir := getConfigPath()
-	if dir == "" {
+	dir, err := getConfigPath()
+	if err != nil {
 		return false
 	}
 
@@ -99,43 +92,45 @@ func configFileExists() bool {
 	return true
 }
 
-func getConfigPath() string {
+func getConfigPath() (string, error) {
 	roaming, err := os.UserConfigDir()
 	if err != nil {
-		return ""
+		return "", err
 	}
 
-	return filepath.Join(roaming, info.AppName)
+	return filepath.Join(roaming, info.AppName), nil
 }
 
-func readConfig() []byte {
-	dir := getConfigPath()
-	if dir == "" {
-		return nil
+func readConfig() ([]byte, error) {
+	dir, err := getConfigPath()
+	if err != nil {
+		return nil, err
 	}
 
 	data, err := os.ReadFile(filepath.Join(dir, "config.json"))
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	return data
+	return data, nil
 }
 
-func writeConfig(config Config) bool {
-	dir := getConfigPath()
-	if dir == "" {
-		return false
+func writeConfig(config *Config) error {
+	dir, err := getConfigPath()
+	if err != nil {
+		return err
 	}
 
-	data, _ := json.MarshalIndent(config, "", "\t")
-	err := os.WriteFile(filepath.Join(dir, "config.json"), data, 0644)
+	data, err := json.MarshalIndent(&config, "", "\t")
+	if err != nil {
+		return err
+	}
 
-	return err == nil
+	return os.WriteFile(filepath.Join(dir, "config.json"), data, 0644)
 }
 
-func defaultConfig() Config {
-	return Config{
+func defaultConfig() *Config {
+	return &Config{
 		Hotkeys: make([]ConfigHotkey, 0),
 		Sounds: ConfigSounds{
 			Enabled: true,

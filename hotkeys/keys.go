@@ -1,6 +1,6 @@
 package hotkeys
 
-var Keys map[string]int = map[string]int{
+var keys map[string]int = map[string]int{
 	"0":       48,
 	"1":       49,
 	"2":       50,
