@@ -24,14 +24,14 @@ The configuration file for Mike can be found in your user AppData roaming folder
 
 Defines one or more hotkey bindings.
 
-| Key     | Description                          | Type    | Possible values                                     |
-|---------|--------------------------------------|---------|-----------------------------------------------------|
-| action  | The action performed by the hotkey   | String  | `mute`, `unmute`, `toggle`                          |
-| key     | The main key for the hotkey          | String  | [See available hotkey keys](#available-hotkey-keys) |
-| ctrl    | Whether `ctrl` must be held          | Boolean | `true`, `false`                                     |
-| shift   | Whether `shift` must be held         | Boolean | `true`, `false`                                     |
-| alt     | Whether `alt` must be held           | Boolean | `true`, `false`                                     |
-| win     | Whether the Windows key must be held | Boolean | `true`, `false`                                     |
+| Key      | Description                          | Type    | Possible values                                     |
+|----------|--------------------------------------|---------|-----------------------------------------------------|
+| `action` | The action performed by the hotkey   | String  | `mute`, `unmute`, `toggle`                          |
+| `key`    | The main key for the hotkey          | String  | [See available hotkey keys](#available-hotkey-keys) |
+| `ctrl`   | Whether `ctrl` must be held          | Boolean | `true`, `false`                                     |
+| `shift`  | Whether `shift` must be held         | Boolean | `true`, `false`                                     |
+| `alt`    | Whether `alt` must be held           | Boolean | `true`, `false`                                     |
+| `win`    | Whether the Windows key must be held | Boolean | `true`, `false`                                     |
 
 #### Available hotkey keys:
 
@@ -49,10 +49,10 @@ Defines one or more hotkey bindings.
 
 Controls sound output for actions.
 
-| Key     | Description                     | Type    | Possible values | Default |
-|---------|---------------------------------|---------|-----------------|---------|
-| enabled | Whether sound output is enabled | Boolean | `true`, `false` | `true`  |
-| volume  | Playback volume (%)             | Number  | -               | `100`   |
+| Key       | Description                     | Type    | Possible values | Default |
+|-----------|---------------------------------|---------|-----------------|---------|
+| `enabled` | Whether sound output is enabled | Boolean | `true`, `false` | `true`  |
+| `volume`  | Playback volume (%)             | Number  | -               | `100`   |
 
 ---
 
@@ -60,11 +60,11 @@ Controls sound output for actions.
 
 Configures which audio controller to use and specific options.
 
-| Key         | Description                                            | Type    | Possible values          | Default   |
-|-------------|--------------------------------------------------------|---------|--------------------------|-----------|
-| type        | Which audio backend to use                             | String  | `windows`, `voicemeeter` | `windows` |
-| windows     | Windows specific controller options (currently unused) | Object  | -                        | -         |
-| voicemeeter | Voicemeeter specific controller options                | Object  | -                        | -         |
+| Key           | Description                                            | Type    | Possible values          | Default   |
+|---------------|--------------------------------------------------------|---------|--------------------------|-----------|
+| `type`        | Which audio backend to use                             | String  | `windows`, `voicemeeter` | `windows` |
+| `windows`     | Windows specific controller options (currently unused) | Object  | -                        | -         |
+| `voicemeeter` | Voicemeeter specific controller options                | Object  | -                        | -         |
 
 ### `controller.windows`
 
@@ -74,9 +74,9 @@ Windows specific controller options (currently unused).
 
 Voicemeeter specific controller options.
 
-| Key           | Description                                 | Type   | Possible values                                    | Default                                                         |
-|---------------|---------------------------------------------|--------|----------------------------------------------------|-----------------------------------------------------------------|
-| remoteDLLPath | Full path to the Voicemeeter Remote API DLL | String | -                                                  | `C:/Program Files (x86)/VB/Voicemeeter/VoicemeeterRemote64.dll` |
-| output        | Voicemeeter virtual output number           | Number | `1` (Virtual output B1)<br>`2` (Virtual output B2) | `1`                                                             |
+| Key             | Description                                 | Type   | Possible values                                    | Default                                                         |
+|-----------------|---------------------------------------------|--------|----------------------------------------------------|-----------------------------------------------------------------|
+| `remoteDLLPath` | Full path to the Voicemeeter Remote API DLL | String | -                                                  | `C:/Program Files (x86)/VB/Voicemeeter/VoicemeeterRemote64.dll` |
+| `output`        | Voicemeeter virtual output number           | Number | `1` (Virtual output B1)<br>`2` (Virtual output B2) | `1`                                                             |
 
 ---
