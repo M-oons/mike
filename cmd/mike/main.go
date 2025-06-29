@@ -20,6 +20,9 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// handle OS signals
+	go handleSignals(cancel)
+
 	// load config
 	cfg, err := config.Load()
 	if err != nil {
@@ -38,9 +41,6 @@ func main() {
 	// setup managers
 	trayManager := tray.NewManager(audioService, cancel)
 	hotkeyManager := hotkeys.NewManager(audioService, cfg.Hotkeys)
-
-	// handle OS signals
-	go handleSignals(cancel)
 
 	// start managers
 	go trayManager.Start(ctx)

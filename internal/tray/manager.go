@@ -6,6 +6,7 @@ import (
 	"github.com/getlantern/systray"
 	"github.com/m-oons/mike/internal/assets"
 	"github.com/m-oons/mike/internal/events"
+	"github.com/m-oons/mike/internal/info"
 )
 
 type Service interface {
@@ -37,22 +38,21 @@ func (m *manager) OnMuteStateChanged(muted bool) {
 	}
 }
 
-func (m *manager) setMuteIcon() {
-	systray.SetTemplateIcon(assets.MuteIcon, assets.MuteIcon)
-}
-
-func (m *manager) setUnmuteIcon() {
-	systray.SetTemplateIcon(assets.UnmuteIcon, assets.UnmuteIcon)
-}
-
 func (m *manager) onReady(ctx context.Context) func() {
 	return func() {
 		systray.SetTitle("Mike")
 		systray.SetTooltip("Mike")
-		systray.AddMenuItem("Mike", "Mike").Disable()
+
+		titleItem := systray.AddMenuItem("Mike", "Mike")
+		repoItem := titleItem.AddSubMenuItem("Open repository", info.Repository)
+		titleItem.AddSubMenuItem(info.VersionString(), info.Version).Disable()
+
 		systray.AddSeparator()
+
 		muteItem := systray.AddMenuItem("Toggle Mute", "Toggle Mute")
+
 		systray.AddSeparator()
+
 		quitItem := systray.AddMenuItem("Quit", "Quit")
 
 		m.service.AddMuteStateListener(m)
@@ -60,6 +60,9 @@ func (m *manager) onReady(ctx context.Context) func() {
 		// listen for menu item clicks
 		for {
 			select {
+			case <-repoItem.ClickedCh:
+				info.OpenRepository()
+
 			case <-muteItem.ClickedCh:
 				m.service.ToggleMute()
 
@@ -76,3 +79,11 @@ func (m *manager) onReady(ctx context.Context) func() {
 }
 
 func (m *manager) onExit() {}
+
+func (m *manager) setMuteIcon() {
+	systray.SetTemplateIcon(assets.MuteIcon, assets.MuteIcon)
+}
+
+func (m *manager) setUnmuteIcon() {
+	systray.SetTemplateIcon(assets.UnmuteIcon, assets.UnmuteIcon)
+}
