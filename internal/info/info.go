@@ -3,6 +3,7 @@ package info
 import (
 	"fmt"
 	"os/exec"
+	"syscall"
 	"time"
 )
 
@@ -19,7 +20,11 @@ var (
 )
 
 func OpenRepository() {
-	exec.Command("cmd", "/c", "start", Repository).Start()
+	cmd := exec.Command("cmd", "/c", "start", "", Repository)
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		HideWindow: true,
+	}
+	cmd.Start()
 }
 
 func VersionString() string {
