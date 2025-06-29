@@ -3,11 +3,12 @@ package hotkeys
 import "strings"
 
 const (
-	modAlt      = 0x0001
-	modCtrl     = 0x0002
-	modShift    = 0x0004
-	modWin      = 0x0008
-	modNoRepeat = 0x4000 // holding down the hotkey won't continuously trigger keybind
+	modAlt          = 0x0001
+	modCtrl         = 0x0002
+	modShift        = 0x0004
+	modWin          = 0x0008
+	modNoRepeat     = 0x4000 // holding down the hotkey won't continuously trigger keybind
+	modCombinations = 16     // 2^4 possible combinations of modifiers
 )
 
 type hotkey struct {

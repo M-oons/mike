@@ -2,12 +2,14 @@ package hotkeys
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"syscall"
 	"unsafe"
 
 	"github.com/m-oons/mike/internal/config"
+	"golang.org/x/sys/windows"
 )
 
 const (
@@ -43,12 +45,14 @@ type manager struct {
 	getMessage         *syscall.Proc
 	postThreadMessage  *syscall.Proc
 	getCurrentThreadId *syscall.Proc
+	registeredHotkeys  map[uintptr]hotkey
 }
 
 func NewManager(audioService AudioService, config []config.ConfigHotkey) *manager {
 	return &manager{
-		audioService: audioService,
-		config:       config,
+		audioService:      audioService,
+		config:            config,
+		registeredHotkeys: make(map[uintptr]hotkey),
 	}
 }
 
@@ -59,11 +63,11 @@ func (m *manager) Start(ctx context.Context) error {
 	defer m.user32.Release()
 	defer m.kernel32.Release()
 
-	if err := m.register(); err != nil {
-		m.unregister()
+	if err := m.registerAll(); err != nil {
+		m.unregisterAll()
 		return fmt.Errorf("error registering hotkeys: %w", err)
 	}
-	defer m.unregister()
+	defer m.unregisterAll()
 
 	threadId, _, _ := m.getCurrentThreadId.Call()
 
@@ -115,28 +119,94 @@ func (m *manager) loadAPI() error {
 	return nil
 }
 
-func (m *manager) register() error {
-	for i, confkey := range m.config {
-		hotkey := hotkey{
-			action: confkey.Action,
-			key:    confkey.Key,
-			ctrl:   confkey.Ctrl,
-			shift:  confkey.Shift,
-			alt:    confkey.Alt,
-			win:    confkey.Win,
+func (m *manager) registerAll() error {
+	registeredCombos := make(map[string]struct{})
+	var specificHotkeys []config.ConfigHotkey
+	var genericHotkeys []config.ConfigHotkey
+
+	// separate hotkeys into groups - specific/generic
+	for _, confHotkey := range m.config {
+		if !confHotkey.Ctrl && !confHotkey.Shift && !confHotkey.Alt && !confHotkey.Win { // no modifiers
+			genericHotkeys = append(genericHotkeys, confHotkey)
+		} else {
+			specificHotkeys = append(specificHotkeys, confHotkey)
 		}
-		ret, _, err := m.registerHotkey.Call(0, uintptr(i+1), uintptr(hotkey.modifiers()), uintptr(hotkey.code()))
-		if ret == 0 {
+	}
+
+	// register specific hotkeys first
+	for _, confHotkey := range specificHotkeys {
+		hotkey := hotkey{
+			action: confHotkey.Action,
+			key:    confHotkey.Key,
+			ctrl:   confHotkey.Ctrl,
+			shift:  confHotkey.Shift,
+			alt:    confHotkey.Alt,
+			win:    confHotkey.Win,
+		}
+
+		keyCode := hotkey.code()
+		if keyCode == -1 { // skip invalid hotkey
+			continue
+		}
+
+		if err := m.register(hotkey); err != nil {
 			return err
+		}
+
+		registeredCombo := fmt.Sprintf("%d|%d", keyCode, hotkey.modifiers())
+		registeredCombos[registeredCombo] = struct{}{}
+	}
+
+	// register generic hotkeys - skip already registered modifier combinations
+	for _, confHotkey := range genericHotkeys {
+		hotkey := hotkey{
+			action: confHotkey.Action,
+			key:    confHotkey.Key,
+		}
+
+		keyCode := hotkey.code()
+		if keyCode == -1 {
+			continue
+		}
+
+		// brute force register all possible modifier combinations
+		for combo := range modCombinations {
+			comboHotkey := hotkey
+			comboHotkey.ctrl = (combo & modCtrl) != 0
+			comboHotkey.shift = (combo & modShift) != 0
+			comboHotkey.alt = (combo & modAlt) != 0
+			comboHotkey.win = (combo & modWin) != 0
+
+			registeredCombo := fmt.Sprintf("%d|%d", keyCode, comboHotkey.modifiers())
+			if _, ok := registeredCombos[registeredCombo]; ok { // modifier combination already registered
+				continue
+			}
+
+			if err := m.register(comboHotkey); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
-func (m *manager) unregister() {
-	for i := range m.config {
-		m.unregisterHotkey.Call(0, uintptr(i+1))
+func (m *manager) register(hotkey hotkey) error {
+	hotkeyID := uintptr(len(m.registeredHotkeys) + 1)
+	ret, _, err := m.registerHotkey.Call(0, hotkeyID, uintptr(hotkey.modifiers()), uintptr(hotkey.code()))
+
+	if ret == 0 && !errors.Is(err, windows.ERROR_HOTKEY_ALREADY_REGISTERED) {
+		return err
+	}
+
+	m.registeredHotkeys[hotkeyID] = hotkey
+
+	return nil
+}
+
+func (m *manager) unregisterAll() {
+	for hotkeyID := range m.registeredHotkeys {
+		m.unregisterHotkey.Call(0, hotkeyID)
 	}
 }
 
@@ -154,15 +224,16 @@ func (m *manager) loop() error {
 			continue
 		}
 
-		if msg.Message == WM_HOTKEY && int16(msg.WParam) <= int16(len(m.config)) {
-			hotkey := m.config[msg.WParam-1]
-			switch strings.ToLower(hotkey.Action) {
-			case "mute":
-				m.audioService.Mute()
-			case "unmute":
-				m.audioService.Unmute()
-			case "toggle":
-				m.audioService.ToggleMute()
+		if msg.Message == WM_HOTKEY {
+			if hotkey, ok := m.registeredHotkeys[msg.WParam]; ok {
+				switch strings.ToLower(hotkey.action) {
+				case "mute":
+					m.audioService.Mute()
+				case "unmute":
+					m.audioService.Unmute()
+				case "toggle":
+					m.audioService.ToggleMute()
+				}
 			}
 		}
 	}
