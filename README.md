@@ -74,9 +74,38 @@ Windows specific controller options (currently unused).
 
 Voicemeeter specific controller options.
 
-| Key             | Description                                 | Type   | Possible values                                    | Default                                                         |
-|-----------------|---------------------------------------------|--------|----------------------------------------------------|-----------------------------------------------------------------|
-| `remoteDLLPath` | Full path to the Voicemeeter Remote API DLL | String | -                                                  | `C:/Program Files (x86)/VB/Voicemeeter/VoicemeeterRemote64.dll` |
-| `output`        | Voicemeeter virtual output number           | Number | `1` (Virtual output B1)<br>`2` (Virtual output B2) | `1`                                                             |
+| Key             | Description                                 | Type   | Possible values                                               | Default                                                         |
+|-----------------|---------------------------------------------|--------|---------------------------------------------------------------|-----------------------------------------------------------------|
+| `remoteDLLPath` | Full path to the Voicemeeter Remote API DLL | String | -                                                             | `C:/Program Files (x86)/VB/Voicemeeter/VoicemeeterRemote64.dll` |
+| `parameter`     | Voicemeeter parameter to target             | String | [See available parameters](#available-voicemeeter-parameters) | `Bus[2]`                                                        |
+
+#### Available Voicemeeter parameters:
+
+The list of available target parameters depends on your edition of Voicemeeter. If an invalid parameter is specified in your configuration, the first available virtual output (B1) for your Voicemeeter edition will be used as the default target parameter.
+
+| Standard   |                   |
+|------------|-------------------|
+| `Strip[0]` | Physical input 1  |
+| `Strip[1]` | Physical input 2  |
+| `Bus[2]`   | Virtual output B1 |
+
+| Banana     |                   |
+|------------|-------------------|
+| `Strip[0]` | Physical input 1  |
+| `Strip[1]` | Physical input 2  |
+| `Strip[2]` | Physical input 3  |
+| `Bus[3]`   | Virtual output B1 |
+| `Bus[4]`   | Virtual output B2 |
+
+| Potato     |                   |
+|------------|-------------------|
+| `Strip[0]` | Physical input 1  |
+| `Strip[1]` | Physical input 2  |
+| `Strip[2]` | Physical input 3  |
+| `Strip[3]` | Physical input 4  |
+| `Strip[4]` | Physical input 5  |
+| `Bus[5]`   | Virtual output B1 |
+| `Bus[6]`   | Virtual output B2 |
+| `Bus[7]`   | Virtual output B3 |
 
 ---

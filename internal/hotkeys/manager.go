@@ -193,7 +193,12 @@ func (m *manager) registerAll() error {
 
 func (m *manager) register(hotkey hotkey) error {
 	hotkeyID := uintptr(len(m.registeredHotkeys) + 1)
-	ret, _, err := m.registerHotkey.Call(0, hotkeyID, uintptr(hotkey.modifiers()), uintptr(hotkey.code()))
+	ret, _, err := m.registerHotkey.Call(
+		0,
+		hotkeyID,
+		uintptr(hotkey.modifiers()),
+		uintptr(hotkey.code()),
+	)
 
 	if ret == 0 && !errors.Is(err, windows.ERROR_HOTKEY_ALREADY_REGISTERED) {
 		return err
@@ -206,7 +211,10 @@ func (m *manager) register(hotkey hotkey) error {
 
 func (m *manager) unregisterAll() {
 	for hotkeyID := range m.registeredHotkeys {
-		m.unregisterHotkey.Call(0, hotkeyID)
+		m.unregisterHotkey.Call(
+			0,
+			hotkeyID,
+		)
 	}
 }
 
@@ -214,7 +222,12 @@ func (m *manager) loop() error {
 	var msg MSG
 
 	for {
-		ret, _, _ := m.getMessage.Call(uintptr(unsafe.Pointer(&msg)), 0, 0, 0)
+		ret, _, _ := m.getMessage.Call(
+			uintptr(unsafe.Pointer(&msg)),
+			0,
+			0,
+			0,
+		)
 
 		if ret == 0 || msg.Message == WM_QUIT { // quit
 			return nil
@@ -229,7 +242,9 @@ func (m *manager) loop() error {
 				switch strings.ToLower(hotkey.action) {
 				case "mute":
 					m.audioService.Mute()
+
 				case "unmute":
+
 					m.audioService.Unmute()
 				case "toggle":
 					m.audioService.ToggleMute()

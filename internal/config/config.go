@@ -40,7 +40,7 @@ type ConfigControllerWindows struct{}
 
 type ConfigControllerVoicemeeter struct {
 	RemoteDLLPath string `json:"remoteDLLPath"`
-	Output        byte   `json:"output"`
+	Parameter     string `json:"parameter"`
 }
 
 func Load() (*Config, error) {
@@ -121,7 +121,7 @@ func writeConfig(config *Config) error {
 		return err
 	}
 
-	data, err := json.MarshalIndent(&config, "", "\t")
+	data, err := json.MarshalIndent(&config, "", "	")
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func defaultConfig() *Config {
 			Windows: ConfigControllerWindows{},
 			Voicemeeter: ConfigControllerVoicemeeter{
 				RemoteDLLPath: "C:/Program Files (x86)/VB/Voicemeeter/VoicemeeterRemote64.dll",
-				Output:        1,
+				Parameter:     "Bus[2]",
 			},
 		},
 	}
