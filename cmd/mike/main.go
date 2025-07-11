@@ -14,6 +14,7 @@ import (
 	"github.com/m-oons/mike/internal/config"
 	"github.com/m-oons/mike/internal/hotkeys"
 	"github.com/m-oons/mike/internal/tray"
+	"github.com/m-oons/mike/internal/updater"
 )
 
 func main() {
@@ -22,6 +23,9 @@ func main() {
 
 	// handle OS signals
 	go handleSignals(cancel)
+
+	// check for updates
+	go updater.CheckForUpdates()
 
 	// load config
 	cfg, err := config.Load()

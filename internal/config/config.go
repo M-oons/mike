@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/m-oons/mike/internal/info"
 )
@@ -98,7 +99,7 @@ func getConfigPath() (string, error) {
 		return "", err
 	}
 
-	return filepath.Join(roaming, info.AppName), nil
+	return filepath.Join(roaming, strings.ToLower(info.AppName)), nil
 }
 
 func readConfig() ([]byte, error) {

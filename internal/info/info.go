@@ -2,15 +2,15 @@ package info
 
 import (
 	"fmt"
-	"os/exec"
-	"syscall"
 	"time"
+
+	"github.com/m-oons/mike/internal/windows/shell32"
 )
 
 const (
-	AppName    = "mike"
+	AppName    = "Mike"
 	Author     = "Moons"
-	Repository = "https://github.com/m-oons/mike"
+	Repository = "m-oons/mike"
 )
 
 var (
@@ -20,11 +20,8 @@ var (
 )
 
 func OpenRepository() {
-	cmd := exec.Command("cmd", "/c", "start", "", Repository)
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		HideWindow: true,
-	}
-	cmd.Start()
+	repo := fmt.Sprintf("https://github.com/%s", Repository)
+	shell32.OpenURL(repo)
 }
 
 func VersionString() string {

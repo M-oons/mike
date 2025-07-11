@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"syscall"
-	"unsafe"
 
 	"github.com/m-oons/mike/internal/config"
+	"github.com/m-oons/mike/internal/windows/kernel32"
+	"github.com/m-oons/mike/internal/windows/user32"
 	"golang.org/x/sys/windows"
 )
 
@@ -17,18 +17,6 @@ const (
 	WM_HOTKEY = 0x0312
 )
 
-type MSG struct {
-	HWnd    uintptr
-	Message uint32
-	WParam  uintptr
-	LParam  uintptr
-	Time    uint32
-	Pt      struct {
-		X int32
-		Y int32
-	}
-}
-
 type AudioService interface {
 	Mute() error
 	Unmute() error
@@ -36,16 +24,10 @@ type AudioService interface {
 }
 
 type manager struct {
-	audioService       AudioService
-	config             []config.ConfigHotkey
-	user32             *syscall.DLL
-	kernel32           *syscall.DLL
-	registerHotkey     *syscall.Proc
-	unregisterHotkey   *syscall.Proc
-	getMessage         *syscall.Proc
-	postThreadMessage  *syscall.Proc
-	getCurrentThreadId *syscall.Proc
-	registeredHotkeys  map[uintptr]hotkey
+	audioService AudioService
+	config       []config.ConfigHotkey
+
+	registeredHotkeys map[uintptr]hotkey
 }
 
 func NewManager(audioService AudioService, config []config.ConfigHotkey) *manager {
@@ -57,66 +39,20 @@ func NewManager(audioService AudioService, config []config.ConfigHotkey) *manage
 }
 
 func (m *manager) Start(ctx context.Context) error {
-	if err := m.loadAPI(); err != nil {
-		return fmt.Errorf("error loading Windows API: %w", err)
-	}
-	defer m.user32.Release()
-	defer m.kernel32.Release()
-
 	if err := m.registerAll(); err != nil {
 		m.unregisterAll()
 		return fmt.Errorf("error registering hotkeys: %w", err)
 	}
 	defer m.unregisterAll()
 
-	threadId, _, _ := m.getCurrentThreadId.Call()
+	threadID, _ := kernel32.GetCurrentThreadID()
 
 	go func() {
 		<-ctx.Done()
-		m.postThreadMessage.Call(threadId, WM_QUIT, 0, 0)
+		user32.PostThreadMessage(threadID, WM_QUIT)
 	}()
 
 	return m.loop()
-}
-
-func (m *manager) loadAPI() error {
-	var err error
-	m.user32, err = syscall.LoadDLL("user32")
-	if err != nil {
-		return fmt.Errorf("error loading 'user32' DLL: %w", err)
-	}
-
-	m.kernel32, err = syscall.LoadDLL("kernel32")
-	if err != nil {
-		return fmt.Errorf("error loading 'kernel32' DLL: %w", err)
-	}
-
-	m.registerHotkey, err = m.user32.FindProc("RegisterHotKey")
-	if err != nil {
-		return fmt.Errorf("error finding user32 procedure 'RegisterHotKey': %w", err)
-	}
-
-	m.unregisterHotkey, err = m.user32.FindProc("UnregisterHotKey")
-	if err != nil {
-		return fmt.Errorf("error finding user32 procedure 'UnregisterHotKey': %w", err)
-	}
-
-	m.getMessage, err = m.user32.FindProc("GetMessageW")
-	if err != nil {
-		return fmt.Errorf("error finding user32 procedure 'GetMessageW': %w", err)
-	}
-
-	m.postThreadMessage, err = m.user32.FindProc("PostThreadMessageW")
-	if err != nil {
-		return fmt.Errorf("error finding user32 procedure 'PostThreadMessageW': %w", err)
-	}
-
-	m.getCurrentThreadId, err = m.kernel32.FindProc("GetCurrentThreadId")
-	if err != nil {
-		return fmt.Errorf("error finding kernel32 procedure 'GetCurrentThreadId': %w", err)
-	}
-
-	return nil
 }
 
 func (m *manager) registerAll() error {
@@ -193,11 +129,10 @@ func (m *manager) registerAll() error {
 
 func (m *manager) register(hotkey hotkey) error {
 	hotkeyID := uintptr(len(m.registeredHotkeys) + 1)
-	ret, _, err := m.registerHotkey.Call(
-		0,
+	ret, err := user32.RegisterHotKey(
 		hotkeyID,
-		uintptr(hotkey.modifiers()),
-		uintptr(hotkey.code()),
+		hotkey.code(),
+		hotkey.modifiers(),
 	)
 
 	if ret == 0 && !errors.Is(err, windows.ERROR_HOTKEY_ALREADY_REGISTERED) {
@@ -211,23 +146,13 @@ func (m *manager) register(hotkey hotkey) error {
 
 func (m *manager) unregisterAll() {
 	for hotkeyID := range m.registeredHotkeys {
-		m.unregisterHotkey.Call(
-			0,
-			hotkeyID,
-		)
+		user32.UnregisterHotKey(hotkeyID)
 	}
 }
 
 func (m *manager) loop() error {
-	var msg MSG
-
 	for {
-		ret, _, _ := m.getMessage.Call(
-			uintptr(unsafe.Pointer(&msg)),
-			0,
-			0,
-			0,
-		)
+		msg, ret, _ := user32.GetMessage()
 
 		if ret == 0 || msg.Message == WM_QUIT { // quit
 			return nil
@@ -244,8 +169,8 @@ func (m *manager) loop() error {
 					m.audioService.Mute()
 
 				case "unmute":
-
 					m.audioService.Unmute()
+
 				case "toggle":
 					m.audioService.ToggleMute()
 				}
