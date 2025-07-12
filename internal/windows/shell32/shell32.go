@@ -1,20 +1,19 @@
 package shell32
 
 import (
-	"syscall"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
 )
 
 var (
-	shell32      = syscall.MustLoadDLL("shell32")
-	shellExecute = shell32.MustFindProc("ShellExecuteW")
+	shell32      = windows.NewLazySystemDLL("shell32")
+	shellExecute = shell32.NewProc("ShellExecuteW")
 )
 
 func OpenURL(url string) (uintptr, error) {
-	verb, _ := syscall.UTF16PtrFromString("open")
-	urlp, _ := syscall.UTF16PtrFromString(url)
+	verb, _ := windows.UTF16PtrFromString("open")
+	urlp, _ := windows.UTF16PtrFromString(url)
 
 	ret, _, err := shellExecute.Call(
 		0,

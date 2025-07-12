@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"syscall"
 
 	"github.com/m-oons/mike/internal/audio"
 	"github.com/m-oons/mike/internal/audio/controllers"
@@ -15,6 +14,7 @@ import (
 	"github.com/m-oons/mike/internal/hotkeys"
 	"github.com/m-oons/mike/internal/tray"
 	"github.com/m-oons/mike/internal/updater"
+	"golang.org/x/sys/windows"
 )
 
 func main() {
@@ -53,7 +53,7 @@ func main() {
 
 func handleSignals(cancel context.CancelFunc) {
 	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(sigChan, windows.SIGINT, windows.SIGTERM)
 	<-sigChan
 	cancel()
 }

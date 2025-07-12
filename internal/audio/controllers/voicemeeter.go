@@ -3,22 +3,22 @@ package controllers
 import (
 	"fmt"
 	"slices"
-	"syscall"
 	"time"
 	"unsafe"
 
 	"github.com/m-oons/mike/internal/config"
+	"golang.org/x/sys/windows"
 )
 
 type voicemeeterController struct {
 	config             config.ConfigControllerVoicemeeter
-	remoteDLL          *syscall.DLL
-	login              *syscall.Proc
-	logout             *syscall.Proc
-	getVoicemeeterType *syscall.Proc
-	getParameterFloat  *syscall.Proc
-	setParameterFloat  *syscall.Proc
-	isParametersDirty  *syscall.Proc
+	remoteDLL          *windows.DLL
+	login              *windows.Proc
+	logout             *windows.Proc
+	getVoicemeeterType *windows.Proc
+	getParameterFloat  *windows.Proc
+	setParameterFloat  *windows.Proc
+	isParametersDirty  *windows.Proc
 	parameter          string
 }
 
@@ -133,15 +133,11 @@ func (c *voicemeeterController) Close() {
 	if c.logout != nil {
 		c.logout.Call()
 	}
-
-	if c.remoteDLL != nil {
-		c.remoteDLL.Release()
-	}
 }
 
 func (c *voicemeeterController) loadAPI() error {
 	var err error
-	c.remoteDLL, err = syscall.LoadDLL(c.config.RemoteDLLPath)
+	c.remoteDLL, err = windows.LoadDLL(c.config.RemoteDLLPath)
 	if err != nil {
 		return fmt.Errorf("error loading Remote API DLL: %w", err)
 	}

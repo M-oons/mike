@@ -1,8 +1,9 @@
 package user32
 
 import (
-	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 const (
@@ -12,12 +13,12 @@ const (
 )
 
 var (
-	user32            = syscall.MustLoadDLL("user32")
-	registerHotKey    = user32.MustFindProc("RegisterHotKey")
-	unregisterHotKey  = user32.MustFindProc("UnregisterHotKey")
-	getMessage        = user32.MustFindProc("GetMessageW")
-	postThreadMessage = user32.MustFindProc("PostThreadMessageW")
-	messageBox        = user32.MustFindProc("MessageBoxW")
+	user32            = windows.NewLazySystemDLL("user32")
+	registerHotKey    = user32.NewProc("RegisterHotKey")
+	unregisterHotKey  = user32.NewProc("UnregisterHotKey")
+	getMessage        = user32.NewProc("GetMessageW")
+	postThreadMessage = user32.NewProc("PostThreadMessageW")
+	messageBox        = user32.NewProc("MessageBoxW")
 )
 
 type MSG struct {
@@ -72,8 +73,8 @@ func PostThreadMessage(threadID uintptr, message uintptr) (uintptr, error) {
 }
 
 func ShowMessageBox(title string, message string) bool {
-	t, _ := syscall.UTF16PtrFromString(title)
-	m, _ := syscall.UTF16PtrFromString(message)
+	t, _ := windows.UTF16PtrFromString(title)
+	m, _ := windows.UTF16PtrFromString(message)
 	ret, _, _ := messageBox.Call(
 		0,
 		uintptr(unsafe.Pointer(m)),
@@ -81,8 +82,4 @@ func ShowMessageBox(title string, message string) bool {
 		MB_YESNO|MB_ICONQUESTION,
 	)
 	return ret == IDYES
-}
-
-func Close() {
-	user32.Release()
 }
